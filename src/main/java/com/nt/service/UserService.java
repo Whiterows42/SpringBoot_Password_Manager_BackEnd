@@ -60,6 +60,20 @@ public class UserService {
 	    return null;
 	}
 
+	
+	public boolean updateUser(User u, int id) {
+		
+	User user =	this.userRepo.findById(id);
+		if (user != null) {
+			u.setId(id);
+			u.setProfilePictureUrl(user.getProfilePictureUrl());
+			this.userRepo.save(u);
+			
+			return true;
+		}
+		
+	return	false;
+	}
 
 
 }

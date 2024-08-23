@@ -19,6 +19,7 @@ import com.nt.service.UploadImageService;
 import com.nt.service.UserService;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @CrossOrigin("*")
@@ -131,6 +132,23 @@ public class UserController {
 	        return filename.substring(lastDotIndex + 1);
 	    }
 	    return "";
+	}
+	
+	
+	@PutMapping("update_user/{id}")
+	public ResponseEntity<String> putMethodName(@PathVariable int id, @RequestBody User entity) {
+		try {
+			boolean isupdate =	this.userService.updateUser(entity, id);
+			if (isupdate) {
+				
+				return ResponseEntity.status(HttpStatus.OK).body("User updated successfully");
+			}
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found ");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("some thing went wrong");
+		}
+	
 	}
 
 }
