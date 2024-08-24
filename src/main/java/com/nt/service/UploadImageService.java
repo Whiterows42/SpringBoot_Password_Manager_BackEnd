@@ -19,7 +19,6 @@ public class UploadImageService {
     @Autowired
     private UserRepo userRepo;
 
-    // Define a directory for storing user profile pictures
     private final String UPLOAD_DIR = "uploads/userpics"; 
 
     public boolean isUploadUserProfile(int id, MultipartFile file) {
@@ -27,30 +26,24 @@ public class UploadImageService {
 
         if (user != null) {
             try {
-                // Ensure the directory exists
                 Path uploadPath = Paths.get(UPLOAD_DIR);
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
-                // Get the file's original name
                 String fileName = file.getOriginalFilename();
                 Path targetLocation = uploadPath.resolve(fileName);
 
-                // Copy the file to the target location (overwriting if it exists)
                 Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-                // Update the user's profile picture URL
                 user.setProfilePictureUrl(fileName);
                 this.userRepo.save(user);
 
                 return true;
             } catch (IOException e) {
-                // Log detailed error for debugging
                 System.err.println("Error occurred while uploading the file: " + e.getMessage());
                 e.printStackTrace();
             } catch (Exception e) {
-                // Catch other unexpected exceptions
                 System.err.println("Unexpected error: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -58,7 +51,6 @@ public class UploadImageService {
             System.err.println("User with ID " + id + " not found.");
         }
 
-        // Return false if any exception occurs or user is not found
         return false;
     }
 }

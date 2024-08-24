@@ -3,6 +3,9 @@ package com.nt.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.nt.entity.PasswordManager;
@@ -37,15 +40,24 @@ public class PasswordMangerService {
 		
 	}
 	
-	public List<PasswordManager> allPassManagers(String email){
-	List<PasswordManager> list =	passRepo.findByEmail(email);
+	
+	
+	public Page<PasswordManager> allPassManagers(String email , int current_page){
+	Pageable pageable =	PageRequest.of(current_page, 5);
+	
+	Page<PasswordManager> list =	passRepo.findByEmail(email , pageable);
 	
 	return list;
 	}
 	
+	
+	
+	
 	public PasswordManager findrecoredByid(int id) {
 		
+		
 	return	passRepo.findById(id);
+	
 	}
 	
 	

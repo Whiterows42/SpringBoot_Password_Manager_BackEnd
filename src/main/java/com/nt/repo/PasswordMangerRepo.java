@@ -2,6 +2,8 @@ package com.nt.repo;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +14,5 @@ public interface PasswordMangerRepo extends CrudRepository<PasswordManager, Inte
 
 	List<PasswordManager> findAll();
 	PasswordManager findById(int id);
-	List<PasswordManager> findByEmail(String email);
+	Page<PasswordManager> findByEmail(String email , Pageable pageable);
 }

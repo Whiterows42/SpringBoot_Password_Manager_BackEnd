@@ -1,3 +1,10 @@
+# Other rules...
+
+### Uploads ###
+uploads/
+uploads/userpics/
+
+# Existing rules...
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar

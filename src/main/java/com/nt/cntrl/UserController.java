@@ -57,6 +57,7 @@ public class UserController {
 		// TODO: process POST request
 //		System.out.println(email);
 //		System.out.println(password);
+		System.out.println("ajits");
 
 		try {
 

@@ -8,6 +8,7 @@ import com.nt.service.PasswordMangerService;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -46,11 +47,11 @@ public class PasswordController {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(pass);
 	}
 
-	@GetMapping("/all_recored/{email}")
-	public ResponseEntity<List<PasswordManager>> getMethodName(@PathVariable String email) {
-		List<PasswordManager> list = null;
+	@GetMapping("/all_recored/{page_index}/{email}")
+	public ResponseEntity<Page<PasswordManager>> getAllPasswordsEntity(@PathVariable int page_index  , @PathVariable String email) {
+		Page<PasswordManager> list = null;
 		try {
-			list = passService.allPassManagers(email);
+			list = passService.allPassManagers(email , page_index);
 			if (list.isEmpty()) {
 
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(list);
