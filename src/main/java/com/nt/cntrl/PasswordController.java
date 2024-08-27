@@ -71,7 +71,7 @@ public class PasswordController {
 	public ResponseEntity<PasswordManager> getMethodName(@PathVariable int id) {
 
 		try {
-			PasswordManager p = passService.findrecoredByid(id);
+			PasswordManager p = passService.findRecordById(id);
 			if (p != null) {
 				return ResponseEntity.ok().body(p);
 			}
@@ -88,7 +88,7 @@ public class PasswordController {
 
 		try {
 			
-			 passService.isDeletebyId(id);
+			 passService.deleteById(id);
 			
 			return ResponseEntity.ok("Deleted Successfully");
 		} catch (Exception e) {

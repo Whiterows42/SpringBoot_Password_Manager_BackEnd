@@ -33,10 +33,23 @@ public class UserService {
 	public boolean verifyUserEntity(String email, String password) {
 	    List<User> users = this.userRepo.findByEmailAndPassword(email, password);
 	    
-	    // If at least one user is found, return true
+	  
 	    return !users.isEmpty();
 	}
 
+	public String verifyUserEmail(String email) {
+		
+	 List<User> users =	this.userRepo.findByEmail(email);
+	 for(User list: users) {
+		 if (list.getEmail().equals(email)) {
+			 
+			 
+			 
+			return email;
+		}
+	 }
+	 return null;
+	}
 	
 	public List<User> showUsersList(String email) {
 	    List<User> users = this.userRepo.findByEmail(email);
