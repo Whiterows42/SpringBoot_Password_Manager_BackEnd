@@ -15,14 +15,17 @@ public class PasswordManager {
 	private String userName;
 	private String email;
 	private String password;
+	private String salt;
 	
-	public PasswordManager(int id, String webUrl, String userName, String email, String password) {
+
+	public PasswordManager(int id, String webUrl, String userName, String email, String password, String salt) {
 		super();
 		this.id = id;
 		this.webUrl = webUrl;
 		this.userName = userName;
 		this.email = email;
 		this.password = password;
+		this.salt = salt;
 	}
 	public PasswordManager() {
 		super();
@@ -60,11 +63,15 @@ public class PasswordManager {
 		this.password = password;
 	}
 	
-	@Override
-	public String toString() {
-		return "PasswordManager [id=" + id + ", webUrl=" + webUrl + ", userName=" + userName + ", password=" + password
-				+ "]";
-	}
+	  public String getSalt() {
+	        return salt;
+	    }
+
+	    public void setSalt(String salt) {
+	        this.salt = salt;
+	    }
+	
+
 	
 	
 	
