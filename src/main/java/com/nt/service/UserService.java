@@ -1,8 +1,10 @@
 package com.nt.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -15,23 +17,35 @@ public class UserService {
 	@Autowired
 	private UserRepo userRepo;
 
-	public String saveUser(User u) {
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	public String createUser(User u) {
+	    // Retrieve user by email
+	    Optional<User> existingUser = this.userRepo.findByEmail(u.getEmail());
 
-		List<User> users = this.userRepo.findByEmail(u.getEmail());
+	    // Check if user already exists
+	    if (existingUser.isPresent()) {
+	        return "Email Already Exists";
+	    }
 
-		if (!users.isEmpty()) {
-			return "Email Already Exist";
-		}
-		User user = this.userRepo.save(u);
-		if (user != null) {
+	    // Encode the password
+	    u.setPassword(passwordEncoder.encode(u.getPassword()));
 
-			return "created";
-		}
-		return "faild to create user";
+	    // Save the new user
+	    User user = this.userRepo.save(u);
+
+	    // Check if user is saved successfully
+	    if (user != null) {
+	        return "User Created Successfully";
+	    }
+
+	    return "Failed to Create User";
 	}
 
+
 	public boolean verifyUserEntity(String email, String password) {
-	    List<User> users = this.userRepo.findByEmailAndPassword(email, password);
+	    List<User> users = this.userRepo.findByEmailAndPassword(email, passwordEncoder.encode(password));
 	    
 	  
 	    return !users.isEmpty();
@@ -39,39 +53,47 @@ public class UserService {
 
 	public String verifyUserEmail(String email) {
 		
-	 List<User> users =	this.userRepo.findByEmail(email);
-	 for(User list: users) {
-		 if (list.getEmail().equals(email)) {
-			 
-			 
-			 
-			return email;
-		}
-	 }
-	 return null;
+		Optional<User> optionalUsers = this.userRepo.findByEmail(email);
+
+		if (optionalUsers.isPresent()) {
+		  
+		    
+		            return email;
+		    }
+		
+
+		// If no user is found or the list is empty
+		return null; // or handle accordingly
+
 	}
 	
-	public List<User> showUsersList(String email) {
-	    List<User> users = this.userRepo.findByEmail(email);
+	public Optional<User> showUserByEmail(String email) {
+	    // Retrieve user from the repository by email
+	    Optional<User> optionalUser = this.userRepo.findByEmail(email);
 	    
-	    if (users != null) {
-	        for (User user : users) {
-	            String filename = user.getProfilePictureUrl();
-	            if (filename != null && !filename.isEmpty()) {
-	                // Construct the full image URL
-	                String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-	                    .path("/userpics/") // Your folder path
-	                    .path(filename)
-	                    .toUriString();
-	                
-	                user.setProfilePictureUrl(imageUrl); // Set the full image URL
-	            }
+	    // Check if the user is present
+	    if (optionalUser.isPresent()) {
+	        User user = optionalUser.get();
+	        String filename = user.getProfilePictureUrl();
+	        
+	        if (filename != null && !filename.isEmpty()) {
+	            // Construct the full image URL
+	            String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+	                .path("/userpics/") // Path to the user profile pictures
+	                .path(filename)
+	                .toUriString();
+	            
+	            // Set the full image URL back to the user object
+	            user.setProfilePictureUrl(imageUrl);
 	        }
-	        return users;
+	        
+	        return Optional.of(user); // Return the updated user
 	    }
 	    
-	    return null;
+	    // Return an empty Optional if no user found
+	    return Optional.empty();
 	}
+
 
 	
 	public boolean updateUser(User u, int id) {

@@ -1,8 +1,10 @@
 package com.nt.cntrl;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.nt.dto.OtpServiceDto;
 import com.nt.entity.OtpEntity;
 import com.nt.entity.User;
 import com.nt.repo.OtpRepo;
@@ -24,7 +27,6 @@ import com.nt.service.OtpService;
 import com.nt.service.UploadImageService;
 import com.nt.service.UserService;
 
-import net.bytebuddy.asm.MemberSubstitution.Substitution.Chain.Step.Resolution;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/home/api/user")
 public class UserController {
 
 	@Autowired
@@ -47,50 +49,55 @@ public class UserController {
 	@Autowired
 	private OtpRepo otpRepo;
 
-	@PostMapping("/create_user")
-	public ResponseEntity<String> createUserEntity(@RequestBody User entity) {
-		// TODO: process POST request
-		try {
-			String response = this.userService.saveUser(entity);
-			if (response.equals("Email Already Exist")) {
-				return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
-			} else if (response.equals("created")) {
-				return ResponseEntity.ok().body(response);
-			}
+//	@PostMapping("/create_user")
+//	public ResponseEntity<String> createUserEntity(@RequestBody User entity) {
+//		// TODO: process POST request
+//		try {
+//			String response = this.userService.createUser(entity);
+//			if (response.equals("Email Already Exist")) {
+//				return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
+//			} else if (response.equals("created")) {
+//				return ResponseEntity.ok().body(response);
+//			}
+//
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("something went wrong");
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//			e.printStackTrace();
+//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
+//
+//		}
+//	}
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("something went wrong");
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
-
-		}
-	}
-
-	@PostMapping("/login_user/{email}/{password}")
-	public ResponseEntity<String> loginUserEntity(@PathVariable String email, @PathVariable String password) {
-		// TODO: process POST request
-//		System.out.println(email);
-//		System.out.println(password);
-		System.out.println("ajits");
-
-		try {
-
-			boolean isLoged = this.userService.verifyUserEntity(email, password);
-			if (isLoged) {
-				this.otpService.sendOtpEmail(email);
-				// send otp logic
-				return ResponseEntity.ok("Opt Send Successfully");
-			}
-
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not found");
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("something went wrong");
-		}
-
+//	@PostMapping("/login_user/{email}/{password}")
+//	public ResponseEntity<String> loginUserEntity(@PathVariable String email, @PathVariable String password) {
+//		// TODO: process POST request
+////		System.out.println(email);
+////		System.out.println(password);
+//		System.out.println("ajits");
+//
+//		try {
+//
+//			boolean isLoged = this.userService.verifyUserEntity(email, password);
+//			if (isLoged) {
+//				this.otpService.sendOtpEmail(email);
+//				// send otp logic
+//				return ResponseEntity.ok("Opt Send Successfully");
+//			}
+//
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not found");
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//			e.printStackTrace();
+//
+//			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("something went wrong");
+//		}
+//
+//	}
+	
+	@GetMapping("/get")
+	public String getString( @RequestBody OtpServiceDto otp) {
+		return "hello ajit" +  otp.getEmail() + "otp is :" + otp.getOtp() ;
 	}
 	
 	@PostMapping("/resend-otp")
@@ -109,53 +116,28 @@ public class UserController {
 		
 	}
 	
-	@PostMapping("/verify-otp")
-	public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) {
-	    try {
-	        List<OtpEntity> otpEntities = otpRepo.findByEmail(email);
-
-	        if (otpEntities.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid OTP or OTP expired!");
-	        }
-
-	        for (OtpEntity otpEntity : otpEntities) {
-	            if (otpEntity.getOtp().equals(otp)) {
-	                if (otpEntity.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(2))) {
-	                	this.otpService.removeExpiredOtps();
-	                    return ResponseEntity.status(HttpStatus.GONE).body("OTP expired!");
-	                }
-	                
-	                return ResponseEntity.ok().body("OTP verified successfully!");
-	            }
-	        }
-
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid OTP or OTP expired!");
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong");
-	    }
-	}
-
 
 
 
 	@GetMapping("/show_user_details/{email}")
-	public ResponseEntity<List<User>> showUserDetailsEnity(@PathVariable String email) {
-		List<User> users = this.userService.showUsersList(email);
-		try {
-			if (users != null) {
-				return ResponseEntity.ok().body(users);
-			}
+	public ResponseEntity<Optional> showUserDetails(@PathVariable String email) {
+	    try {
+	        // Retrieve the user by email
+	        Optional  userOptional = this.userService.showUserByEmail(email);
 
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(users);
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(users);
-		}
-
+	        // Check if the user is present
+	        if (userOptional.isPresent()) {
+	            return ResponseEntity.ok(userOptional);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	        }
+	    } catch (Exception e) {
+	        // Log the exception (could use a logger instead of printStackTrace)
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
 	}
+
 
 	@PostMapping("/upload_profile/pic/{id}")
 	public ResponseEntity<String> uploadUserProfilePic(@PathVariable int id, MultipartFile file) {
@@ -201,7 +183,7 @@ public class UserController {
 		return "";
 	}
 
-	@PutMapping("update_user/{id}")
+	@PutMapping("/update_user/{id}")
 	public ResponseEntity<String> putMethodName(@PathVariable int id, @RequestBody User entity) {
 		try {
 			boolean isupdate = this.userService.updateUser(entity, id);
@@ -214,7 +196,14 @@ public class UserController {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("some thing went wrong");
 		}
-
+		
 	}
+	
+	@GetMapping("/loged-user")
+	public String loggedUser(Principal principal) {
+		return principal.getName() ;
+	}
+	
+	
 
 }

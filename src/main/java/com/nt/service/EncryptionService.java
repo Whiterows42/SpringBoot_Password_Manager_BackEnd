@@ -9,6 +9,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -38,11 +39,11 @@ public class EncryptionService {
         return new SecretKeySpec(tmp.getEncoded(), ALGORITHM);
     }
 
-    // Encrypt the password
+    // Encrypt the data
     public String encrypt(String data, String password, String salt) throws Exception {
         SecretKeySpec keySpec = (SecretKeySpec) getSecretKey(password, salt);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        
+
         // Generate IV
         byte[] iv = new byte[IV_LENGTH];
         RANDOM.nextBytes(iv);
@@ -59,25 +60,47 @@ public class EncryptionService {
         return Base64.getEncoder().encodeToString(combined);
     }
 
-    // Decrypt the password
+    // Decrypt the data
     public String decrypt(String encryptedData, String password, String salt) throws Exception {
-        byte[] combined = Base64.getDecoder().decode(encryptedData);
+        if (encryptedData == null || encryptedData.isEmpty()) {
+            throw new IllegalArgumentException("Encrypted data cannot be null or empty");
+        }
 
-        // Extract IV
+        byte[] combined;
+        try {
+            combined = Base64.getDecoder().decode(encryptedData);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid Base64 encoded data: " + encryptedData, e);
+        }
+
+        if (combined.length < IV_LENGTH) {
+            throw new IllegalArgumentException("Invalid encrypted data length");
+        }
+
+        // Extract the IV from the beginning of the combined byte array
         byte[] iv = new byte[IV_LENGTH];
         System.arraycopy(combined, 0, iv, 0, IV_LENGTH);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-        // Extract encrypted text
+        // Extract the encrypted bytes
         byte[] encryptedBytes = new byte[combined.length - IV_LENGTH];
         System.arraycopy(combined, IV_LENGTH, encryptedBytes, 0, encryptedBytes.length);
 
-        // Derive the key
         SecretKeySpec keySpec = (SecretKeySpec) getSecretKey(password, salt);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+
+        // Use the IV with the decryption cipher
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
 
-        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-        return new String(decryptedBytes);
+        byte[] decryptedBytes;
+        try {
+            decryptedBytes = cipher.doFinal(encryptedBytes);
+        } catch (Exception e) {
+            // Log or handle the exception properly
+            throw new RuntimeException("Decryption failed", e);
+        }
+
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
+
 }

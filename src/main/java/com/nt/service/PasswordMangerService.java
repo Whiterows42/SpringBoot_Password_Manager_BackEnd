@@ -25,6 +25,7 @@ public class PasswordMangerService {
         boolean isAdd = false;
         if (pass != null && pass.getPassword() != null) {
             try {
+            	System.out.println(pass);
                 // Encrypt password before saving
                 String salt = encryptionService.generateSalt();
                 String encryptedPassword = encryptionService.encrypt(pass.getPassword(), pass.getEmail(), salt);
@@ -34,6 +35,7 @@ public class PasswordMangerService {
                 pass.setSalt(salt);
 
                 PasswordManager p = passRepo.save(pass);
+                
                 if (p != null) {
                     isAdd = true;
                 }
