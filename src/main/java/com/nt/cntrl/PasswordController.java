@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/pass")
+@RequestMapping("/home/api/pass")
 public class PasswordController {
 
 	@Autowired
 	private PasswordMangerService passService;
 	
 	@PostMapping("/store_pass_req")
-	public ResponseEntity<PasswordManager> getMethodName(@RequestBody PasswordManager pass) {
+	public ResponseEntity<PasswordManager> saveNewPassword(@RequestBody PasswordManager pass) {
 		try {
 			boolean isStore = passService.storeNewPassword(pass);
 
